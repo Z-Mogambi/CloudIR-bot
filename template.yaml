@@ -1,0 +1,44 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Cloud IR Bot - GuardDuty Auto-Quarantine
+
+Resources:
+  QuarantineSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: no inbound access - used for compromised instances
+      VpcId: !Ref VPC
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+
+  GDQuarantineFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.13
+      CodeUri: ./src
+      Environment:
+        Variables:
+          QUARANTINE_SG_ID: !Ref QuarantineSG
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - Statement:
+            - Effect: Allow
+              Action:
+                - ec2:ModifyInstanceAttribute
+                - ec2:CreateTags
+                - ec2:DescribeInstances
+              Resource: "*"
+      Events:
+        GuardDutyEvent:
+          Type: CloudWatchEvent
+          Properties:
+            Pattern:
+              source:
+                - aws.guardduty
+
+Parameters:
+  VPC:
+    Type: String
+    Description: VPC ID where quarantine SG will be created
