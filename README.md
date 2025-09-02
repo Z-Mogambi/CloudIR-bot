@@ -8,8 +8,18 @@ When GuardDuty flags a compromised EC2 instance,
     - Replaces the instances security group with a quarantined SG with no inbound access
 
 
-# architectural description
+# Architectural description
 - GuardDuty detects suspicious activity
 - EventBridge routes finding to Lambda
 - Lambda tags and isolated instance by swapping SG
 - Compromised EC2 instance is quarantined automatically
+
+# Tech stack
+- **AWS GuardDuty**
+- **Amazon EventBridge**  
+- **AWS Lambda** 
+- **Amazon EC2** 
+- **Amazon VPC Security Groups** 
+- **AWS SAM (Serverless Application Model)**  
+- **Python**  
+- **Logging/CloudWatch**
